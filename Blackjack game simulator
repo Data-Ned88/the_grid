@@ -1,0 +1,208 @@
+#define suits class
+
+import random as ra
+class Suits(object):
+
+   
+    def __init__(self,name):
+        self.name = name
+        self.cards = {'Two':2,'Three':3,'Four':4,"Five:":5,"Six:":6,"Seven":7,"Eight":8,"Nine":9,"Ten":10,\
+"Jack":11, 'Queen':12,'King':13,'Ace':1}
+        self.checklist = [1,2,3,4,5,6,7,8,9,10,11,12,13]
+        self.drawncard_ubound = 13
+        self.annonce = ""
+    def drawcard(self):
+        
+        if len(self.cards) > 1:
+            
+            drawncard = ra.randint(0,self.drawncard_ubound-1)
+            cards_idx = self.checklist[drawncard]
+                
+            if cards_idx == 1:
+                output = 1
+                self.announce = "Ace of " + self.name
+                del(self.cards["Ace"])
+                self.checklist.remove(1)
+                self.drawncard_ubound -=1
+                return(output)
+            else:
+                for c in self.cards:
+                    if self.cards[c] == cards_idx:
+                        output = self.cards[c]
+                        self.announce = c + " of " + self.name
+                        self.drawncard_ubound -=1
+                        del(self.checklist[drawncard])
+                        del(self.cards[c])
+                        return(output)
+        else:
+            self.announce = c + " of " + self.name
+            return(self.cards.values())
+    
+    def print_drawncard(self):
+        print(output)
+        
+class Player(object):
+    def __init__(self, budget, dealer = True):
+        self.budget = budget
+        self.dealer = dealer
+        self.hand = []
+
+ned = Player(40000,dealer=False)
+dealer = Player(40000)
+pcount = 0
+while pcount < 3 and ned.budget > 0 and dealer.budget > 0:
+    pstake = int(input("What are you betting?: You have %s to play with:" %(ned.budget)))    
+    cl = Suits("Clubs")
+    sp = Suits("Spades")
+    he = Suits("Hearts")
+    di = Suits("Diamonds")
+    suit_dict = {1:cl,2:sp,3:he,4:di}
+
+
+    def playround(ply):
+        randno = ra.randint(1,4)
+        rand_suit = suit_dict[randno]
+        ply.hand.append(rand_suit.drawcard())
+        if ply.dealer is False:
+            print(rand_suit.announce)
+
+    def player_status_pr():
+        if 1 in ned.hand:
+            print("Has Ace, hand value is",sum(ned.hand),"or",sum([sum(ned.hand),13]))
+        else: 
+            print("Hand value is", sum(ned.hand))
+
+
+    def dealer_go():
+        if 1 in dealer.hand:
+            dealer_val = sum(dealer.hand)
+            dealer_val_alt = sum([sum(dealer.hand),13]) 
+        else:
+            dealer_val = sum(dealer.hand)
+            dealer_val_alt = sum(dealer.hand)
+        if dealer_val <= 15 or dealer_val_alt <= 15:
+            playround(dealer)
+            if 1 in dealer.hand:
+                dealer_val = sum(dealer.hand)
+                dealer_val_alt = sum([sum(dealer.hand),13])
+                return(dealer_val,dealer_val_alt,1)
+            else:
+                dealer_val = sum(dealer.hand)
+                dealer_val_alt = sum(dealer.hand)
+                return(dealer_val,dealer_val_alt,1)        
+        else:
+            if 1 in dealer.hand:
+                dealer_val = sum(dealer.hand)
+                dealer_val_alt = sum([sum(dealer.hand),13])
+                return(dealer_val,dealer_val_alt,0)
+            else:
+                dealer_val = sum(dealer.hand)
+                dealer_val_alt = sum(dealer.hand)
+                return(dealer_val,dealer_val_alt,0)
+    
+    def nedgo():
+        decision = input("Stick or hit? '(s/h)':")
+        if decision.lower() == 'h':
+            playround(ned)
+            if 1 in ned.hand:
+                ned_val = sum(ned.hand)
+                ned_val_alt = sum([sum(ned.hand),13])
+                return (ned_val, ned_val_alt,1)
+            else:
+                ned_val = sum(ned.hand)
+                ned_val_alt = sum(ned.hand)
+                return (ned_val, ned_val_alt,1)
+        else:
+            if 1 in ned.hand:
+                ned_val = sum(ned.hand)
+                ned_val_alt = sum([sum(ned.hand),13])
+                return (ned_val,ned_val_alt,0)
+            else:
+                ned_val = sum(ned.hand)
+                ned_val_alt = sum(ned.hand)
+                return (ned_val,ned_val_alt,0)
+    def result_check(dval,dvalt,pval,pvalt):
+        if dvalt != dval and dvalt <22:
+            dealer_outcome = dvalt
+        else:
+            dealer_outcome = dval
+        if pvalt != pval and pvalt <22:
+            ned_outcome = pvalt
+        else:
+            ned_outcome = pval
+        if ned_outcome > 21:
+            return("pbust")
+        elif dealer_outcome > 21:
+            return("dbust")
+        elif ned_outcome >= dealer_outcome:
+            return("nahead")
+        else:
+            return("dahead")   
+        
+    playround(ned)
+    playround(dealer)
+    player_status_pr()
+
+    
+    in_game = True
+
+    while in_game is True:
+
+        nlow,nhigh,nretire = nedgo()
+        dlow,dhigh,dretire = dealer_go()
+        status = result_check(dlow,dhigh,nlow,nhigh)
+        print(status,"Dealer hand:",dealer.hand, "Ned hand:",ned.hand)
+        if status == "pbust":
+            in_game = False
+            result = 1
+        elif status == "dbust":
+            in_game = False
+            result = 2
+        else:
+            if status == "nahead" and dretire == 0:
+                in_game = False
+                result = 3
+            elif status == "dahead" and nretire == 0:
+                in_game = False
+                result = 4
+            else:
+                in_game = True
+    
+    else:
+        if result == 1:
+            print("Player went bust. Dealer wins")
+            print("Dealer's hand stats:",dlow,dhigh,dealer.hand)
+            print("Player's hand stats:",nlow,nhigh,ned.hand)
+            dealer.budget += pstake
+            ned.budget -= pstake
+            
+        elif result == 2:
+            print("Dealer went bust. Player wins")
+            print("Dealer's hand stats:",dlow,dhigh,dealer.hand)
+            print("Player's hand stats:",nlow,nhigh,ned.hand)
+            dealer.budget -= pstake
+            ned.budget += pstake
+        elif result == 3:
+            print("Player wins")
+            print("Dealer's hand stats:",dlow,dhigh,dealer.hand)
+            print("Player's hand stats:",nlow,nhigh,ned.hand)
+            dealer.budget -= pstake
+            ned.budget += pstake
+        else:
+            print("Dealer wins")
+            print("Dealer's hand stats:",dlow,dhigh,dealer.hand)
+            print("Player's hand stats:",nlow,nhigh,ned.hand)
+            dealer.budget += pstake
+            ned.budget -= pstake            
+    pcount +=1
+    ned.hand = []
+    dealer.hand = []
+    print ("Ned has :", ned.budget)
+else:
+    print("End of Game")
+    if ned.budget <= 0:
+        print("Ned went bankrupt")
+    elif dealer.budget <=0:
+        print("Dealer went bankrupt")
+    else:
+        print ("After 7 games, dealer and Ned afloat. Ned has {x} in the bank, dealer has {y}".format(x = ned.budget, y = dealer.budget))
