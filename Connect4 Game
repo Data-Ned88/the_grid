@@ -1,0 +1,155 @@
+import re
+
+#blank board setup
+
+start_row = ["-"]*4
+start_matrix = [start_row]*4
+for row in start_matrix:
+    print(" ".join(row))
+print(start_matrix)
+
+#one turn function
+
+def one_t(matrixs,player, plcheck1, plcheck2):
+    #first attempt to input coordinates. 
+    promptstring = "Place your %s - row first, column second, separate with comma: " % player
+    inputg = input(promptstring)
+    #puts the numbers from your coordinates into a list of 2 elements
+    list1  = []
+    for i in inputg:
+        if i != ',':
+            list1.append(int(i))
+    
+    #list element0 is the row - outer element when called out matrix - list ele is the col
+    p1r = list1[0]-1
+    p1c = list1[1]-1
+    #makes correct false if a your coordinates are too big or b they are taken already
+    #it checks that they are taken by comparing the matrix element value with the player value.
+    # if both satisfied, correct becomes true.
+    if p1r > 3 or p1c > 3:
+        correct = False       
+    else:
+        if matrixs[p1r][p1c] == plcheck1 or matrixs[p1r][p1c] == plcheck2:
+            correct = False
+        else:
+            correct = True
+    #while loop gives makes user reinput as long as correct False, makes new matrix when True
+    #same checking criteria as if loop above.
+    while correct is False:
+        reinput = input("Already taken or off grid- do it again: ")
+        list1  = []
+        for i in reinput:
+            if i != ',':
+                list1.append(int(i))       
+        p1r = list1[0]-1
+        p1c = list1[1]-1
+        if p1r > 4 or p1c > 4:
+            correct = False       
+        else:
+            if matrixs[p1r][p1c] == plcheck1 or matrixs[p1r][p1c] == plcheck2:
+                correct = False
+            else:
+                correct = True
+    else:
+#creates the otuput matrix from scratch by taking the full list within list as is if not row match
+# if match, it makes a new list with original elements from that inner list at matrix index,
+#unless column index match, in which case it replaces the  element of the inner lsit within
+# with the player value
+                
+        fly_matrix = []  
+        for i in range(0,4):
+            if i == p1r:
+                list5 = []
+                list6 = matrixs[i]
+                for j in range(0,4):
+                    if j == p1c:
+                        list5.append(player)
+                    else:
+                        list5.append(list6[j])
+                fly_matrix.append(list5)
+            else:
+                fly_matrix.append(matrixs[i])
+   
+        return(fly_matrix)
+
+#check if won
+
+
+def is_won(matrix):
+    count = 0
+    for i in range(0,4):
+        try:
+            
+            x = [matrix[0][i],matrix[1][i],matrix[2][i]]
+            p = "".join(x)
+            y = len(list(set(x)))
+            if y == 1 and re.search('-',p) is None:
+                count +=1
+            x = [matrix[1][i],matrix[2][i],matrix[3][i]]
+            p = "".join(x)
+            y = len(list(set(x)))
+            if y == 1 and re.search('-',p) is None:
+                count +=1    
+            x = [matrix[i][0],matrix[i][1],matrix[i][2]]
+            p = "".join(x)
+            y = len(list(set(x)))
+            if y == 1 and re.search('-',p) is None:
+                count +=1    
+            x = [matrix[i][1],matrix[i][2],matrix[i][3]]
+            p = "".join(x)
+            y = len(list(set(x)))
+            if y == 1 and re.search('-',p) is None:
+                count +=1   
+            x = [matrix[i][0],matrix[i+1][1],matrix[i+2][2]]
+            p = "".join(x)
+            y = len(list(set(x)))
+            if y == 1 and re.search('-',p) is None:
+                count +=1       
+            x = [matrix[0][i],matrix[1][i+1],matrix[2][i+2]]
+            p = "".join(x)
+            y = len(list(set(x)))
+            if y == 1 and re.search('-',p) is None:
+                count +=1
+            x = [matrix[i][1],matrix[i+1][2],matrix[i+2][3]]
+            p = "".join(x)
+            y = len(list(set(x)))
+            if y == 1 and re.search('-',p) is None:
+                count +=1       
+            x = [matrix[1][i],matrix[2][i+1],matrix[3][i+2]]
+            p = "".join(x)
+            y = len(list(set(x)))
+            if y == 1 and re.search('-',p) is None:
+                count +=1
+        except Exception:
+            pass
+        
+    if count > 0:
+        return True
+    else:
+        return False
+# main game script
+player1 = input("Player 1 - select your character: ")
+player2 = input("Player 2 - select your character: ")
+
+output_matrix = one_t(start_matrix,player1,player1,player2)
+for r in output_matrix:
+    print(" ".join(r))
+bv = False
+while not bv:
+    output_matrix = one_t(output_matrix,player2,player1,player2)
+    for r in output_matrix:
+        print(" ".join(r))
+    player_on = "Player2"
+    bv = is_won(output_matrix)
+    if bv:
+        print('End of Game! {x} is the winner!'.format(x=player_on))
+        break
+
+    output_matrix = one_t(output_matrix,player1,player1,player2)
+    for r in output_matrix:
+        print(" ".join(r))
+    player_on = "Player1"
+    bv = is_won(output_matrix)
+
+else:
+    print('End of Game! {x} is the winner!'.format(x=player_on))
